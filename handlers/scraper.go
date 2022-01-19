@@ -1,4 +1,4 @@
-package scraper
+package handlers
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
 	"regexp"
 	"strconv"
@@ -17,13 +16,6 @@ var client http.Client
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		log.Fatalf("Got error while creating cookie jar %s", err.Error())
-	}
-	client = http.Client{
-		Jar: jar,
-	}
 }
 
 func FetchURL(url string) {
@@ -69,8 +61,27 @@ func FetchAndSave(url string, fileExt string) {
 func Sanitizer(url string) string {
 	//Must find the last / and then check for the next .
 	//after that, if it finds any forbiden simbol then deletes everything after that
-	newUrl := url
-	return newUrl
+	domainName := GetDomainName(url)
+	var match string
+	switch domainName {
+	case "www.twitter.com":
+		var re = regexp.MustCompile(`.+status/\d*/?`)
+		match = re.FindString(url)
+
+	case "www.pixiv.com":
+		var re = regexp.MustCompile(`.+artworks/\d*/?`)
+		match = re.FindString(url)
+
+	case "www.artstation.com":
+		var re = regexp.MustCompile(`.+artwork/.*/?`)
+		match = re.FindString(url)
+
+	case "www.instagram.com":
+		var re = regexp.MustCompile(`.+\/p\/.*\/`)
+		match = re.FindString(url)
+	}
+
+	return match
 }
 
 func GetFileExtension(url string) string {
@@ -79,4 +90,11 @@ func GetFileExtension(url string) string {
 	match := re.FindString(url)
 
 	return match[7:]
+}
+
+func GetDomainName(url string) string {
+	var re = regexp.MustCompile(`[a-zA-Z]*\.[a-zA-Z]+\.[a-zA-Z]+`)
+	match := re.FindString(url)
+
+	return match
 }
