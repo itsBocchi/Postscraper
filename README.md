@@ -1,7 +1,5 @@
 ## PostScrapper  
 
----
-
 An image and video downloader tool for Twitter, Pixiv and Artstation.  
 
 Working with this links as reference, will delete them later.  
