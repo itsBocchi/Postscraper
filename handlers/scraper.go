@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -36,6 +37,13 @@ func FetchURL(url string) {
 }
 
 func FetchAndSave(url string, fileExt string) {
+
+	if strings.Contains(url, "twitter") {
+		fmt.Println(url[len(url)-19:])
+		CallDownload(url[len(url)-19:])
+		return
+	}
+
 	// don't worry about errors
 	response, e := http.Get(url)
 	if e != nil {
@@ -58,26 +66,26 @@ func FetchAndSave(url string, fileExt string) {
 	fmt.Println("Success!")
 }
 
-func Sanitizer(url string) string {
+func Sanitize(url string) string {
 	//Must find the last / and then check for the next .
 	//after that, if it finds any forbiden simbol then deletes everything after that
 	domainName := GetDomainName(url)
 	var match string
 	switch domainName {
 	case "www.twitter.com":
-		var re = regexp.MustCompile(`.+status/\d*/?`)
+		var re = regexp.MustCompile(`.+status/\d*`)
 		match = re.FindString(url)
 
 	case "www.pixiv.com":
-		var re = regexp.MustCompile(`.+artworks/\d*/?`)
+		var re = regexp.MustCompile(`.+artworks/\d*`)
 		match = re.FindString(url)
 
 	case "www.artstation.com":
-		var re = regexp.MustCompile(`.+artwork/.*/?`)
+		var re = regexp.MustCompile(`.+artwork/.*`)
 		match = re.FindString(url)
 
 	case "www.instagram.com":
-		var re = regexp.MustCompile(`.+\/p\/.*\/`)
+		var re = regexp.MustCompile(`.+\/p\/.*`)
 		match = re.FindString(url)
 	}
 
@@ -88,7 +96,6 @@ func GetFileExtension(url string) string {
 
 	var re = regexp.MustCompile(`format=[a-z]*`)
 	match := re.FindString(url)
-
 	return match[7:]
 }
 
